@@ -24,7 +24,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 def show_all_markers():
     print("Classify API called")
     if request.method == 'POST':
-        offset = 50
+        offset = 0
         data = request.get_json(force=True)
         # image = Image.frombytes('RGB',(400, 600), b64decode(data['image']))
         image = Image.open(BytesIO(b64decode(data['image'])))
@@ -39,20 +39,20 @@ def show_all_markers():
             x_min, y_min = topleft[0], botright[1]
             x_max, y_max = botright[0], topleft[1]
 
-            # import matplotlib.pyplot as plt
-            # import matplotlib.patches as patches
-            # fig = plt.figure()
-            # ax = fig.add_subplot(111)
-            # plt.imshow(image)
-            #
-            # # Create a Rectangle patch
-            # rect = patches.Rectangle((x_min, y_min),
-            #                          x_max - x_min, y_max - y_min,
-            #                          linewidth=1,
-            #                          edgecolor='r',
-            #                          facecolor='none')
-            # ax.add_patch(rect)
-            # plt.show()
+            import matplotlib.pyplot as plt
+            import matplotlib.patches as patches
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            plt.imshow(image)
+
+            # Create a Rectangle patch
+            rect = patches.Rectangle((x_min, y_min),
+                                     x_max - x_min, y_max - y_min,
+                                     linewidth=1,
+                                     edgecolor='r',
+                                     facecolor='none')
+            ax.add_patch(rect)
+            plt.show()
 
         except:
             return Response(json.dumps({'text': "Oops. No text detected",
@@ -131,9 +131,9 @@ def bb_ocr(img):
     return topLeft, botRight
 
 
-@app.route('/index', methods=['GET'])
+@app.route('/', methods=['GET'])
 def index():
-    pass
+    return "Server up and running"
 
 
 if __name__ == '__main__':
