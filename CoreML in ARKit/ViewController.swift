@@ -185,6 +185,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(_:)))
 //        tapGesture.numberOfTapsRequired = 1
 //        tapGesture.numberOfTouchesRequired = 1
+        
+        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.didDoubleTapScreen))
+        doubleTapRecognizer.numberOfTapsRequired = 2
+        doubleTapRecognizer.numberOfTouchesRequired = 1
+        self.view.addGestureRecognizer(doubleTapRecognizer)
+        
+//        tapGesture.require(toFail: doubleTapRecognizer)
         sceneView.showsStatistics = true
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
@@ -205,7 +212,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        // Begin Loop to Update CoreML
 //        loopCoreMLUpdate()
     }
-    private func addPlane(hitTestResult: ARHitTestResult) {
+    private func addAirPlane(hitTestResult: ARHitTestResult) {
         let scene = SCNScene(named: "art.scnassets/plane_banner.scn")!
         let planeNode = scene.rootNode.childNode(withName: "planeBanner", recursively: true)
         
@@ -225,9 +232,35 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     private func onTextTap(node : SCNNode) {
-        if let scnText = node.geometry as? SCNText {
-            print(scnText.string as Any)
+        
+        if !(node.childNodes.isEmpty) {
+            let scnText = node.childNodes[0].geometry as? SCNText
+            print(scnText?.string as Any)
         }
+        else{
+            let scnText = node.geometry as? SCNText
+            print(scnText?.string as Any)
+        }
+        
+//    if let scnText = node.geometry as? SCNText {
+//        print(scnText.string as Any)
+//        }
+//    else if let scnText = node.childNodes[0].geometry as? SCNText {
+//            print(scnText.string as Any)
+//        }
+//    else{
+//        print("invalid")
+//        }
+        
+        
+//        do {
+//            let scnText = try node.childNodes[0].geometry
+//            print(scnText.string as Any)
+//            }
+//        catch {
+//            let scnText = node.geometry
+//            print(scnText.string as Any)
+//        }
     }
     
     func createTextNode(string: String) -> SCNNode {
@@ -246,7 +279,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let dy = min.y + 0.5 * (max.y - min.y)
         let dz = min.z + 0.5 * (max.z - min.z)
         textNode.pivot = SCNMatrix4MakeTranslation(dx, dy, dz)
-        
+
         let width = (max.x - min.x) * fontSize
         let height = (max.y - min.y) * fontSize
         let plane = SCNPlane(width: CGFloat(width), height: CGFloat(height))
@@ -255,6 +288,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         planeNode.geometry?.firstMaterial?.isDoubleSided = true
         planeNode.position = textNode.position
         textNode.eulerAngles = planeNode.eulerAngles
+
         planeNode.addChildNode(textNode)
         
         return planeNode
@@ -319,6 +353,28 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             print(touchPosition)
             return
             
+        }
+        
+    }
+    
+    @objc func didDoubleTapScreen(_ recognizer :UIGestureRecognizer) {
+                print("Double Tapped")
+                let touchPosition = recognizer.location(in: sceneView)
+        
+                // 2.
+                // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
+                let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
+        
+                // 3.
+                if !hitTestResult.isEmpty {
+                    guard let hitResult = hitTestResult.first else {
+                        return
+                    }
+                    print(hitResult.worldTransform.columns.3)
+                    addAirPlane(hitTestResult: hitResult)
+        //
+        
+        
         }
         
     }
