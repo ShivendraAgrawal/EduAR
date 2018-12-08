@@ -374,6 +374,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+    
+    
+    func adjustUITextViewHeight(arg : UITextView)
+    {
+        arg.translatesAutoresizingMaskIntoConstraints = true
+        arg.sizeToFit()
+        arg.isScrollEnabled = false
+//        arg.isEditable = false
+    }
+    
+    func increaseFontSize (arg : UITextView) {
+        arg.font =  UIFont(name: arg.font!.fontName, size: arg.font!.pointSize+4)!
+    }
+//    var isEditable: Bool { return false }
+    
     @objc func didDoubleTapScreen(_ recognizer :UIGestureRecognizer) {
                 print("Double Tapped")
                 let touchPosition = recognizer.location(in: sceneView)
