@@ -6,6 +6,14 @@ import Vision
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     
+    //Store The Rotation Of The CurrentNode
+    var currentAngleY: Float = 0.0
+    
+    //Not Really Necessary But Can Use If You Like
+    var isRotating = false
+    
+    var planeNode: SCNNode!
+    
     @IBAction func captureFrame(_ sender: Any) {
         print("Frame captured")
         ///////////////////////////
@@ -196,7 +204,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.showsStatistics = true
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
-        
+//        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(moveNode))
+//        self.view.addGestureRecognizer(panGesture)
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(didPan(_:)))
+        sceneView.addGestureRecognizer(panGesture)
 //
 //        //////////////////////////////////////////////////
 //
@@ -215,7 +226,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     private func addAirPlane(hitTestResult: ARHitTestResult) {
         let scene = SCNScene(named: "art.scnassets/plane_banner.scn")!
-        let planeNode = scene.rootNode.childNode(withName: "planeBanner", recursively: true)
+        planeNode = scene.rootNode.childNode(withName: "planeBanner", recursively: true)
         
         // 2.
         planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
@@ -230,6 +241,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // 4.
         self.sceneView.scene.rootNode.addChildNode(planeNode!)
+//        moveNode(_ gesture: UIPanGestureRecognizer,currentNode:planeNode)
     }
     
     private func onTextTap(node : SCNNode) {
@@ -299,15 +311,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let width = (max.x - min.x) * fontSize
         let height = (max.y - min.y) * fontSize
         let plane = SCNPlane(width: CGFloat(width), height: CGFloat(height))
-        let planeNode = SCNNode(geometry: plane)
-        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.5)
-        planeNode.geometry?.firstMaterial?.isDoubleSided = true
-        planeNode.position = textNode.position
-        textNode.eulerAngles = planeNode.eulerAngles
+        let planeNode1 = SCNNode(geometry: plane)
+        planeNode1.geometry?.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.5)
+        planeNode1.geometry?.firstMaterial?.isDoubleSided = true
+        planeNode1.position = textNode.position
+        textNode.eulerAngles = planeNode1.eulerAngles
 
-        planeNode.addChildNode(textNode)
+        planeNode1.addChildNode(textNode)
         
-        return planeNode
+        return planeNode1
     }
     
     
@@ -378,6 +390,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+    
+    
+    func adjustUITextViewHeight(arg : UITextView)
+    {
+        arg.translatesAutoresizingMaskIntoConstraints = true
+        arg.sizeToFit()
+        arg.isScrollEnabled = false
+//        arg.isEditable = false
+    }
+    
+    func increaseFontSize (arg : UITextView) {
+        arg.font =  UIFont(name: arg.font!.fontName, size: arg.font!.pointSize+4)!
+    }
+//    var isEditable: Bool { return false }
+    
     @objc func didDoubleTapScreen(_ recognizer :UIGestureRecognizer) {
                 print("Double Tapped")
                 let touchPosition = recognizer.location(in: sceneView)
@@ -400,7 +427,52 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+    @objc
+    func didPan(_ gesture: UIPanGestureRecognizer) {
+        guard let _ = planeNode else { return }
+        let translation = gesture.translation(in: gesture.view)
+        var newAngleY = (Float)(translation.x)*(Float)(Double.pi)/180.0
+        
+        newAngleY += currentAngleY
+        planeNode?.eulerAngles.y = newAngleY
+        
+        if gesture.state == .ended{
+            currentAngleY = newAngleY
+        }
+    }
     
+//    /// Rotates An Object On It's YAxis
+//    ///
+//    /// - Parameter gesture: UIPanGestureRecognizer
+//    @objc func moveNode(_ gesture: UIPanGestureRecognizer) {
+//
+//        if !isRotating{
+//
+//            //1. Get The Current Touch Point
+//            let currentTouchPoint = gesture.location(in: sceneView)
+//
+//            //2. Get The Next Feature Point Etc
+//            let hitTestResult = sceneView.hitTest(currentTouchPoint, types: .featurePoint)
+//            if !hitTestResult.isEmpty {
+//
+//                print("hit result")
+//
+//                guard let hitResult = hitTestResult.first else {
+//                    return
+//                }
+//
+//                let node = hitTestResult.node
+//            //3. Convert To World Coordinates
+//            let worldTransform = hitResult.worldTransform
+//
+//            //4. Set The New Position
+//            let newPosition = SCNVector3(worldTransform.columns.3.x, worldTransform.columns.3.y, worldTransform.columns.3.z)
+////
+//            //5. Apply To The Node
+//            node!.simdPosition = float3(newPosition.x, newPosition.y, newPosition.z)
+//            }
+//        }
+//    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
