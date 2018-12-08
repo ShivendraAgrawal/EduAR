@@ -245,6 +245,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     private func onTextTap(node : SCNNode) {
+//        let scnText = node.childNodes[0].geometry as? SCNText
+//                    print(scnText?.string as Any)
+//                    let text = scnText?.string as! String
+//                    self.performSegue(withIdentifier: "textEditor", sender: text)
        
         if !(node.childNodes.isEmpty) {
             let scnText = node.childNodes[0].geometry as? SCNText
@@ -255,7 +259,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         else{
             let scnText = node.geometry as? SCNText
             print(scnText?.string as Any)
-            let text = scnText?.string as! String
+            let text = "Touch the Text"
+            //The line above is the hack
             self.performSegue(withIdentifier: "textEditor", sender: text)
         }
         
