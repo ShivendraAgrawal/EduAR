@@ -1,13 +1,7 @@
 import numpy as np
-import json
-import logging
-import random
-from collections import Counter, defaultdict
-import socket
 from io import BytesIO
 from pprint import pprint
 import cv2
-import sys
 import pytesseract as pytesseract
 from PIL import Image
 from flask_cors import CORS
@@ -30,6 +24,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 def show_all_markers():
     print("Classify API called")
     if request.method == 'POST':
+        offset = 50
         data = request.get_json(force=True)
         # image = Image.frombytes('RGB',(400, 600), b64decode(data['image']))
         image = Image.open(BytesIO(b64decode(data['image'])))
@@ -37,33 +32,41 @@ def show_all_markers():
         image = image.rotate(270)
         # image.show()
         np_image = np.array(image)
+        h, w, _ = np_image.shape
         result = None
-        topleft, botright = bb_ocr(np_image)
+        try:
+            topleft, botright = bb_ocr(np_image)
+            x_min, y_min = topleft[0], botright[1]
+            x_max, y_max = botright[0], topleft[1]
 
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as patches
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        plt.imshow(image)
-        x_min, y_min = topleft[0], botright[1]
-        x_max, y_max = botright[0], topleft[1]
+            # import matplotlib.pyplot as plt
+            # import matplotlib.patches as patches
+            # fig = plt.figure()
+            # ax = fig.add_subplot(111)
+            # plt.imshow(image)
+            #
+            # # Create a Rectangle patch
+            # rect = patches.Rectangle((x_min, y_min),
+            #                          x_max - x_min, y_max - y_min,
+            #                          linewidth=1,
+            #                          edgecolor='r',
+            #                          facecolor='none')
+            # ax.add_patch(rect)
+            # plt.show()
 
-        # Create a Rectangle patch
-        rect = patches.Rectangle((x_min, y_min),
-                                 x_max - x_min, y_max - y_min,
-                                 linewidth=1,
-                                 edgecolor='r',
-                                 facecolor='none')
-        ax.add_patch(rect)
-        plt.show()
-        print(result)
+        except:
+            return Response(json.dumps({'text': "Oops. No text detected",
+                                        'x': 1000,
+                                        'y': h - 350 + offset
+                                        }),
+                            mimetype='application/json')
 
 
-    return Response(json.dumps({'text' : ocrRec(np_image),
-                                'x' : (x_min + x_max)/2,
-                                'y' : (y_min + y_max)/2
-                                }),
-                    mimetype='application/json')
+        return Response(json.dumps({'text' : ocrRec(np_image),
+                                    'x' : (x_min + x_max)/2,
+                                    'y' : h - ((y_min + y_max)/2) + offset
+                                    }),
+                        mimetype='application/json')
 
 
 def ocrRec(image):
@@ -73,19 +76,6 @@ def ocrRec(image):
     return text
 
 def bb_ocr(img):
-    # h, w, _ = image.shape  # assumes color image
-    #
-    # # run tesseract, returning the bounding boxes
-    # boxes = pytesseract.image_to_boxes(image)  # also include any config options you use
-    #
-    # # draw the bounding boxes on the image
-    # for b in boxes.splitlines():
-    #     b = b.split(' ')
-    #     img = cv2.rectangle(image, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
-    #
-    # # show annotated image and wait for keypress
-    # cv2.imshow("image", image)
-    # cv2.waitKey(0)
     h, w, _ = img.shape
 
     # apply tesseract to BOXES
@@ -102,7 +92,7 @@ def bb_ocr(img):
     textList = text.split('\n')
     print(textList)
 
-   
+
     countt = 0
     x1, y1, x2, y2 = boxList[0][0], 0, 0, 0
     lastLetterList = []
