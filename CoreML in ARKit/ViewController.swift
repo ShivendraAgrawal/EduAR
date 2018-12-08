@@ -179,7 +179,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
 //        //////////////////////////////////////////////////
 //        // Tap Gesture Recognizer
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
+        sceneView.addGestureRecognizer(tapGesture)
         
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(_:)))
 //        tapGesture.numberOfTapsRequired = 1
@@ -223,6 +224,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         self.sceneView.scene.rootNode.addChildNode(planeNode!)
     }
     
+    private func onTextTap(node : SCNNode) {
+        if let scnText = node.geometry as? SCNText {
+            print(scnText.string as Any)
+        }
+    }
     
     func createTextNode(string: String) -> SCNNode {
         let text = SCNText(string: string, extrusionDepth: 0.1)
@@ -235,17 +241,25 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let fontSize = Float(0.04)
         textNode.scale = SCNVector3(fontSize, fontSize, fontSize)
         
-        return textNode
+        let (min, max) = (text.boundingBox.min, text.boundingBox.max)
+        let dx = min.x + 0.5 * (max.x - min.x)
+        let dy = min.y + 0.5 * (max.y - min.y)
+        let dz = min.z + 0.5 * (max.z - min.z)
+        textNode.pivot = SCNMatrix4MakeTranslation(dx, dy, dz)
+        
+        let width = (max.x - min.x) * fontSize
+        let height = (max.y - min.y) * fontSize
+        let plane = SCNPlane(width: CGFloat(width), height: CGFloat(height))
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.5)
+        planeNode.geometry?.firstMaterial?.isDoubleSided = true
+        planeNode.position = textNode.position
+        textNode.eulerAngles = planeNode.eulerAngles
+        planeNode.addChildNode(textNode)
+        
+        return planeNode
     }
     
-//    func addText(string: String) {
-//        let textNode = self.createTextNode(string: string)
-//        textNode.position = SCNVector3Zero
-//
-//        self.sceneView.scene.rootNode.addChildNode(textNode)
-//
-//
-//    }
     
     private func addtextScreen(hitTestResult: ARHitTestResult,text: String) {
         let textNode = self.createTextNode(string: text)
@@ -256,7 +270,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         textNode.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
 //        planeNode?.scale = .init(0.005, 0.005, 0.005)
         
-       
+        
         self.sceneView.scene.rootNode.addChildNode(textNode)
     }
     
@@ -278,24 +292,38 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     
-    @objc func didTap(recognizer :UIGestureRecognizer) {
+    @objc func didTap(_ gesture :UIGestureRecognizer) {
 //        print("Tapped")
         // Get exact position where touch happened on screen of iPhone (2D coordinate)
-        let touchPosition = recognizer.location(in: sceneView)
+//        let touchPosition = recognizer.location(in: sceneView)
+//
+//        // 2.
+//        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
+//        let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
+//
+//        // 3.
+//        if !hitTestResult.isEmpty {
+//            guard let hitResult = hitTestResult.first else {
+//                return
+//            }
+//            print(hitResult.worldTransform.columns.3)
+//            addPlane(hitTestResult: hitResult)
+//
+        let touchPosition = gesture.location(in: sceneView)
+        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
         
-        // 2.
-        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
-        let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
-        
-        // 3.
-        if !hitTestResult.isEmpty {
-            guard let hitResult = hitTestResult.first else {
-                return
-            }
-            print(hitResult.worldTransform.columns.3)
-            addPlane(hitTestResult: hitResult)
+        if !tappedNode.isEmpty {
+            let node = tappedNode[0].node
+            onTextTap(node: node)
+        } else {
+            print(touchPosition)
+            return
+            
         }
+        
     }
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
