@@ -17,6 +17,7 @@ class textEditorViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        print("Setting text")
         textArea.text = text
     }
     
