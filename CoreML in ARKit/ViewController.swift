@@ -1,11 +1,3 @@
-//
-//  ViewController.swift
-//  CoreML in ARKit
-//
-//  Created by Hanley Weng on 14/7/17.
-//  Copyright © 2017 CompanyName. All rights reserved.
-//
-
 import UIKit
 import SceneKit
 import ARKit
@@ -142,6 +134,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 print(x)
                 print(y)
                 
+                self.tap_to_add_text(x: x,y: y,text: parsedText)
                 
                 
                 
@@ -186,11 +179,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
 //        //////////////////////////////////////////////////
 //        // Tap Gesture Recognizer
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(gestureRecognize:)))
-//        view.addGestureRecognizer(tapGesture)
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(_:)))
-        tapGesture.numberOfTapsRequired = 1
-        tapGesture.numberOfTouchesRequired = 1
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
+        sceneView.addGestureRecognizer(tapGesture)
+        
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(_:)))
+//        tapGesture.numberOfTapsRequired = 1
+//        tapGesture.numberOfTouchesRequired = 1
+        sceneView.showsStatistics = true
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        
+        
 //
 //        //////////////////////////////////////////////////
 //
@@ -207,21 +205,125 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        // Begin Loop to Update CoreML
 //        loopCoreMLUpdate()
     }
+    private func addPlane(hitTestResult: ARHitTestResult) {
+        let scene = SCNScene(named: "art.scnassets/plane_banner.scn")!
+        let planeNode = scene.rootNode.childNode(withName: "planeBanner", recursively: true)
+        
+        // 2.
+        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
+       planeNode?.scale = .init(0.005, 0.005, 0.005)
+        
+        // 3.
+        let bannerNode = planeNode?.childNode(withName: "banner", recursively: true)
+        
+        // Find banner material and update its diffuse contents:
+        let bannerMaterial = bannerNode?.geometry?.materials.first(where: { $0.name == "logo" })
+        bannerMaterial?.diffuse.contents = UIImage(named: "next_reality_logo")
+        
+        // 4.
+        self.sceneView.scene.rootNode.addChildNode(planeNode!)
+    }
     
-    @objc func didTap(_ sender: UITapGestureRecognizer) {
-        print("Tapped")
-        // Get tap location
-        let tapLocation = sender.location(in: sceneView)
-        print(tapLocation)
-        
-        // Perform hit test
-        let results = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
-        
-        // If a hit was received, get position of
-        if let result = results.first {
-            print(result)
+    private func onTextTap(node : SCNNode) {
+        if let scnText = node.geometry as? SCNText {
+            print(scnText.string as Any)
         }
     }
+    
+    func createTextNode(string: String) -> SCNNode {
+        let text = SCNText(string: string, extrusionDepth: 0.1)
+        text.font = UIFont.systemFont(ofSize: 1.0)
+        text.flatness = 0.01
+        text.firstMaterial?.diffuse.contents = UIColor.red
+        
+        let textNode = SCNNode(geometry: text)
+        
+        let fontSize = Float(0.04)
+        textNode.scale = SCNVector3(fontSize, fontSize, fontSize)
+        
+        let (min, max) = (text.boundingBox.min, text.boundingBox.max)
+        let dx = min.x + 0.5 * (max.x - min.x)
+        let dy = min.y + 0.5 * (max.y - min.y)
+        let dz = min.z + 0.5 * (max.z - min.z)
+        textNode.pivot = SCNMatrix4MakeTranslation(dx, dy, dz)
+        
+        let width = (max.x - min.x) * fontSize
+        let height = (max.y - min.y) * fontSize
+        let plane = SCNPlane(width: CGFloat(width), height: CGFloat(height))
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.5)
+        planeNode.geometry?.firstMaterial?.isDoubleSided = true
+        planeNode.position = textNode.position
+        textNode.eulerAngles = planeNode.eulerAngles
+        planeNode.addChildNode(textNode)
+        
+        return planeNode
+    }
+    
+    
+    private func addtextScreen(hitTestResult: ARHitTestResult,text: String) {
+        let textNode = self.createTextNode(string: text)
+//        textNode.position = SCNVector3Zero
+        
+//        self.sceneView.scene.rootNode.addChildNode(textNode)
+        // 2.
+        textNode.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
+//        planeNode?.scale = .init(0.005, 0.005, 0.005)
+        
+        
+        self.sceneView.scene.rootNode.addChildNode(textNode)
+    }
+    
+    private func tap_to_add_text(x : Float,y : Float,text : String) {
+        let touchPosition = CGPoint(x:CGFloat(x),y:CGFloat(y))
+        
+        // 2.
+        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
+        let hitTestResult = self.sceneView?.hitTest(touchPosition, types: .featurePoint)
+        
+        // 3.
+        if !(hitTestResult?.isEmpty)! {
+            guard let hitResult = hitTestResult?.first else {
+                return
+            }
+            print(hitResult.worldTransform.columns.3)
+            addtextScreen(hitTestResult: hitResult,text: text)
+        }
+    }
+    
+    
+    @objc func didTap(_ gesture :UIGestureRecognizer) {
+//        print("Tapped")
+        // Get exact position where touch happened on screen of iPhone (2D coordinate)
+//        let touchPosition = recognizer.location(in: sceneView)
+//
+//        // 2.
+//        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
+//        let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
+//
+//        // 3.
+//        if !hitTestResult.isEmpty {
+//            guard let hitResult = hitTestResult.first else {
+//                return
+//            }
+//            print(hitResult.worldTransform.columns.3)
+//            addPlane(hitTestResult: hitResult)
+//
+        let touchPosition = gesture.location(in: sceneView)
+        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
+        
+        if !tappedNode.isEmpty {
+            let node = tappedNode[0].node
+            onTextTap(node: node)
+        } else {
+            print(touchPosition)
+            return
+            
+        }
+        
+    }
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -281,131 +383,131 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        }
 //    }
     
-    func createNewBubbleParentNode(_ text : String) -> SCNNode {
-        // Warning: Creating 3D Text is susceptible to crashing. To reduce chances of crashing; reduce number of polygons, letters, smoothness, etc.
-        
-        // TEXT BILLBOARD CONSTRAINT
-        let billboardConstraint = SCNBillboardConstraint()
-        billboardConstraint.freeAxes = SCNBillboardAxis.Y
-        
-        // BUBBLE-TEXT
-        let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
-        var font = UIFont(name: "Futura", size: 0.15)
-        font = font?.withTraits(traits: .traitBold)
-        bubble.font = font
-        bubble.alignmentMode = kCAAlignmentCenter
-        bubble.firstMaterial?.diffuse.contents = UIColor.orange
-        bubble.firstMaterial?.specular.contents = UIColor.white
-        bubble.firstMaterial?.isDoubleSided = true
-        // bubble.flatness // setting this too low can cause crashes.
-        bubble.chamferRadius = CGFloat(bubbleDepth)
-        
-        // BUBBLE NODE
-        let (minBound, maxBound) = bubble.boundingBox
-        let bubbleNode = SCNNode(geometry: bubble)
-        // Centre Node - to Centre-Bottom point
-        bubbleNode.pivot = SCNMatrix4MakeTranslation( (maxBound.x - minBound.x)/2, minBound.y, bubbleDepth/2)
-        // Reduce default text size
-        bubbleNode.scale = SCNVector3Make(0.2, 0.2, 0.2)
-        
-        // CENTRE POINT NODE
-        let sphere = SCNSphere(radius: 0.005)
-        sphere.firstMaterial?.diffuse.contents = UIColor.cyan
-        let sphereNode = SCNNode(geometry: sphere)
-        
-        // BUBBLE PARENT NODE
-        let bubbleNodeParent = SCNNode()
-        bubbleNodeParent.addChildNode(bubbleNode)
-        bubbleNodeParent.addChildNode(sphereNode)
-        bubbleNodeParent.constraints = [billboardConstraint]
-        
-        return bubbleNodeParent
-    }
-    
-    // MARK: - CoreML Vision Handling
-    
-    func loopCoreMLUpdate() {
-        // Continuously run CoreML whenever it's ready. (Preventing 'hiccups' in Frame Rate)
-        
-        dispatchQueueML.async {
-            // 1. Run Update.
-            self.updateCoreML()
-            
-            // 2. Loop this function.
-            self.loopCoreMLUpdate()
-        }
-        
-    }
-    
-    func classificationCompleteHandler(request: VNRequest, error: Error?) {
-        // Catch Errors
-        if error != nil {
-            print("Error: " + (error?.localizedDescription)!)
-            return
-        }
-        guard let observations = request.results else {
-            print("No results")
-            return
-        }
-        
-        // Get Classifications
-        let classifications = observations[0...1] // top 2 results
-            .flatMap({ $0 as? VNClassificationObservation })
-            .map({ "\($0.identifier) \(String(format:"- %.2f", $0.confidence))" })
-            .joined(separator: "\n")
-        
-        
-        DispatchQueue.main.async {
-            // Print Classifications
-            print(classifications)
-            print("--")
-            
-            // Display Debug Text on screen
-            var debugText:String = ""
-            debugText += classifications
-            self.debugTextView.text = debugText
-            
-            // Store the latest prediction
-            var objectName:String = "…"
-            objectName = classifications.components(separatedBy: "-")[0]
-            objectName = objectName.components(separatedBy: ",")[0]
-            self.latestPrediction = objectName
-            
-        }
-    }
-    
-    func updateCoreML() {
-        ///////////////////////////
-        // Get Camera Image as RGB
-        let pixbuff : CVPixelBuffer? = (sceneView.session.currentFrame?.capturedImage)
-        if pixbuff == nil { return }
-        print("Pixbuff Here : ")
-        print(pixbuff ?? 0)
-        let ciImage = CIImage(cvPixelBuffer: pixbuff!)
-        print(ciImage)
-        // Note: Not entirely sure if the ciImage is being interpreted as RGB, but for now it works with the Inception model.
-        // Note2: Also uncertain if the pixelBuffer should be rotated before handing off to Vision (VNImageRequestHandler) - regardless, for now, it still works well with the Inception model.
-        
-        ///////////////////////////
-        // Prepare CoreML/Vision Request
-        let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, options: [:])
-        // let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!, orientation: myOrientation, options: [:]) // Alternatively; we can convert the above to an RGB CGImage and use that. Also UIInterfaceOrientation can inform orientation values.
-        
-        ///////////////////////////
-        // Run Image Request
-        do {
-            try imageRequestHandler.perform(self.visionRequests)
-        } catch {
-            print(error)
-        }
-        
-    }
+//    func createNewBubbleParentNode(_ text : String) -> SCNNode {
+//        // Warning: Creating 3D Text is susceptible to crashing. To reduce chances of crashing; reduce number of polygons, letters, smoothness, etc.
+//
+//        // TEXT BILLBOARD CONSTRAINT
+//        let billboardConstraint = SCNBillboardConstraint()
+//        billboardConstraint.freeAxes = SCNBillboardAxis.Y
+//
+//        // BUBBLE-TEXT
+//        let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
+//        var font = UIFont(name: "Futura", size: 0.15)
+//        font = font?.withTraits(traits: .traitBold)
+//        bubble.font = font
+//        bubble.alignmentMode = kCAAlignmentCenter
+//        bubble.firstMaterial?.diffuse.contents = UIColor.orange
+//        bubble.firstMaterial?.specular.contents = UIColor.white
+//        bubble.firstMaterial?.isDoubleSided = true
+//        // bubble.flatness // setting this too low can cause crashes.
+//        bubble.chamferRadius = CGFloat(bubbleDepth)
+//
+//        // BUBBLE NODE
+//        let (minBound, maxBound) = bubble.boundingBox
+//        let bubbleNode = SCNNode(geometry: bubble)
+//        // Centre Node - to Centre-Bottom point
+//        bubbleNode.pivot = SCNMatrix4MakeTranslation( (maxBound.x - minBound.x)/2, minBound.y, bubbleDepth/2)
+//        // Reduce default text size
+//        bubbleNode.scale = SCNVector3Make(0.2, 0.2, 0.2)
+//
+//        // CENTRE POINT NODE
+//        let sphere = SCNSphere(radius: 0.005)
+//        sphere.firstMaterial?.diffuse.contents = UIColor.cyan
+//        let sphereNode = SCNNode(geometry: sphere)
+//
+//        // BUBBLE PARENT NODE
+//        let bubbleNodeParent = SCNNode()
+//        bubbleNodeParent.addChildNode(bubbleNode)
+//        bubbleNodeParent.addChildNode(sphereNode)
+//        bubbleNodeParent.constraints = [billboardConstraint]
+//
+//        return bubbleNodeParent
+//    }
+//
+//    // MARK: - CoreML Vision Handling
+//
+//    func loopCoreMLUpdate() {
+//        // Continuously run CoreML whenever it's ready. (Preventing 'hiccups' in Frame Rate)
+//
+//        dispatchQueueML.async {
+//            // 1. Run Update.
+//            self.updateCoreML()
+//
+//            // 2. Loop this function.
+//            self.loopCoreMLUpdate()
+//        }
+//
+//    }
+//
+//    func classificationCompleteHandler(request: VNRequest, error: Error?) {
+//        // Catch Errors
+//        if error != nil {
+//            print("Error: " + (error?.localizedDescription)!)
+//            return
+//        }
+//        guard let observations = request.results else {
+//            print("No results")
+//            return
+//        }
+//
+//        // Get Classifications
+//        let classifications = observations[0...1] // top 2 results
+//            .flatMap({ $0 as? VNClassificationObservation })
+//            .map({ "\($0.identifier) \(String(format:"- %.2f", $0.confidence))" })
+//            .joined(separator: "\n")
+//
+//
+//        DispatchQueue.main.async {
+//            // Print Classifications
+//            print(classifications)
+//            print("--")
+//
+//            // Display Debug Text on screen
+//            var debugText:String = ""
+//            debugText += classifications
+//            self.debugTextView.text = debugText
+//
+//            // Store the latest prediction
+//            var objectName:String = "…"
+//            objectName = classifications.components(separatedBy: "-")[0]
+//            objectName = objectName.components(separatedBy: ",")[0]
+//            self.latestPrediction = objectName
+//
+//        }
+//    }
+//
+//    func updateCoreML() {
+//        ///////////////////////////
+//        // Get Camera Image as RGB
+//        let pixbuff : CVPixelBuffer? = (sceneView.session.currentFrame?.capturedImage)
+//        if pixbuff == nil { return }
+//        print("Pixbuff Here : ")
+//        print(pixbuff ?? 0)
+//        let ciImage = CIImage(cvPixelBuffer: pixbuff!)
+//        print(ciImage)
+//        // Note: Not entirely sure if the ciImage is being interpreted as RGB, but for now it works with the Inception model.
+//        // Note2: Also uncertain if the pixelBuffer should be rotated before handing off to Vision (VNImageRequestHandler) - regardless, for now, it still works well with the Inception model.
+//
+//        ///////////////////////////
+//        // Prepare CoreML/Vision Request
+//        let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, options: [:])
+//        // let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!, orientation: myOrientation, options: [:]) // Alternatively; we can convert the above to an RGB CGImage and use that. Also UIInterfaceOrientation can inform orientation values.
+//
+//        ///////////////////////////
+//        // Run Image Request
+//        do {
+//            try imageRequestHandler.perform(self.visionRequests)
+//        } catch {
+//            print(error)
+//        }
+//
+//    }
 }
 
-extension UIFont {
-    // Based on: https://stackoverflow.com/questions/4713236/how-do-i-set-bold-and-italic-on-uilabel-of-iphone-ipad
-    func withTraits(traits:UIFontDescriptorSymbolicTraits...) -> UIFont {
-        let descriptor = self.fontDescriptor.withSymbolicTraits(UIFontDescriptorSymbolicTraits(traits))
-        return UIFont(descriptor: descriptor!, size: 0)
-    }
-}
+//extension UIFont {
+//    // Based on: https://stackoverflow.com/questions/4713236/how-do-i-set-bold-and-italic-on-uilabel-of-iphone-ipad
+//    func withTraits(traits:UIFontDescriptorSymbolicTraits...) -> UIFont {
+//        let descriptor = self.fontDescriptor.withSymbolicTraits(UIFontDescriptorSymbolicTraits(traits))
+//        return UIFont(descriptor: descriptor!, size: 0)
+//    }
+//}
