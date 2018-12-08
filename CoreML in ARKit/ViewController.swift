@@ -363,9 +363,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
         
         if !tappedNode.isEmpty {
-            let node = tappedNode[0].node
-            print("Calling onTextTap")
-            onTextTap(node: node)
+            guard tappedNode.first != nil else {
+                return
+            }
+            onTextTap(node: tappedNode[0].node)
+//            let node = tappedNode[0].node
+//            print("Calling onTextTap")
+//            onTextTap(node: node)
         } else {
             print(touchPosition)
             return
