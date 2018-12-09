@@ -90,11 +90,16 @@
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="56"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences" keyboardAppearance="alert"/>
                             </textView>
+                            <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x6a-Wa-Pne">
+                                <rect key="frame" x="0.0" y="53" width="834" height="216"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            </pickerView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="kIY-Kk-m3h"/>
                     </view>
                     <connections>
+                        <outlet property="picker" destination="x6a-Wa-Pne" id="oTo-E0-WkB"/>
                         <outlet property="textArea" destination="a69-O9-Ggf" id="hgg-7g-RAJ"/>
                     </connections>
                 </viewController>
