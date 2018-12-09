@@ -224,20 +224,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        // Begin Loop to Update CoreML
 //        loopCoreMLUpdate()
     }
-    private func addAirPlane(hitTestResult: ARHitTestResult) {
-        let scene = SCNScene(named: "art.scnassets/plane_banner.scn")!
-        planeNode = scene.rootNode.childNode(withName: "planeBanner", recursively: true)
-        
+//    private func addAirPlane(hitTestResult: ARHitTestResult) {
+    private func addAirPlane(anchor : ARAnchor) {
+        let scene = SCNScene(named: "art.scnassets/snowman.scn")!
+        planeNode = scene.rootNode.childNode(withName: "snowBanner", recursively: true)
+       
         // 2.
-        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
-       planeNode?.scale = .init(0.005, 0.005, 0.005)
+//        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
+       planeNode?.position = SCNVector3(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
+       planeNode?.scale = .init(1, 1, 1)
         
         // 3.
-        let bannerNode = planeNode?.childNode(withName: "banner", recursively: true)
-        
-        // Find banner material and update its diffuse contents:
-        let bannerMaterial = bannerNode?.geometry?.materials.first(where: { $0.name == "logo" })
-        bannerMaterial?.diffuse.contents = UIImage(named: "next_reality_logo")
+//        let bannerNode = planeNode?.childNode(withName: "banner", recursively: true)
+//
+//        // Find banner material and update its diffuse contents:
+//        let bannerMaterial = bannerNode?.geometry?.materials.first(where: { $0.name == "logo" })
+//        bannerMaterial?.diffuse.contents = UIImage(named: "next_reality_logo")
         
         // 4.
         self.sceneView.scene.rootNode.addChildNode(planeNode!)
@@ -359,7 +361,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     
-    @objc func didTap(_ gesture :UIGestureRecognizer) {
+    @objc func didTap(_ gesture :UITapGestureRecognizer) {
 //        print("Tapped")
         // Get exact position where touch happened on screen of iPhone (2D coordinate)
 //        let touchPosition = recognizer.location(in: sceneView)
@@ -376,21 +378,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //            print(hitResult.worldTransform.columns.3)
 //            addPlane(hitTestResult: hitResult)
 //
+        if gesture.state == .ended {
         let touchPosition = gesture.location(in: sceneView)
-        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
-        
-        if !tappedNode.isEmpty {
-            guard tappedNode.first != nil else {
-                return
-            }
-            onTextTap(node: tappedNode[0].node)
+//        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
+        let hits = self.sceneView.hitTest(touchPosition, options: [:])
+//        if !tappedNode.isEmpty {
 //            let node = tappedNode[0].node
 //            print("Calling onTextTap")
 //            onTextTap(node: node)
+        if let tappednode = hits.first?.node {
+            //do something with tapped object
+            onTextTap(node: tappednode)
         } else {
             print(touchPosition)
             return
             
+        }
         }
         
     }
@@ -413,21 +416,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @objc func didDoubleTapScreen(_ recognizer :UIGestureRecognizer) {
                 print("Double Tapped")
                 let touchPosition = recognizer.location(in: sceneView)
-        
+
                 // 2.
                 // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
-                let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
-        
-                // 3.
-                if !hitTestResult.isEmpty {
-                    guard let hitResult = hitTestResult.first else {
-                        return
-                    }
-                    print(hitResult.worldTransform.columns.3)
-                    addAirPlane(hitTestResult: hitResult)
-        //
-        
-        
+//                let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
+//
+//                // 3.
+//                if !hitTestResult.isEmpty {
+//                    guard let hitResult = hitTestResult.first else {
+//                        return
+//                    }
+//                    print(hitResult.worldTransform.columns.3)
+//                    addAirPlane(hitTestResult: hitResult)
+//        //
+//
+//
+//        }
+        let planeHitTestResults = self.sceneView.hitTest(touchPosition, types: .existingPlaneUsingExtent)
+
+        if let result = planeHitTestResults.first {
+            //2. Create An Anchor At The World Transform
+            let anchor = ARAnchor(transform: result.worldTransform)
+            
+            //3. Add It To The Scene
+            sceneView.session.add(anchor:anchor)
+            addAirPlane(anchor : anchor)
         }
         
     }
