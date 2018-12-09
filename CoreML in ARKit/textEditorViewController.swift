@@ -30,14 +30,12 @@ class textEditorViewController: UIViewController {
         paragraphButtonOutlet.isEnabled = false
         self.selected_mode = "Paragraph"
         instructionLabel.text = "Tap or long press the text for more options"
-        textArea.font = UIFont(name: (textArea.font?.fontName)!, size: 20)!
         
         // Do any additional setup after loading the view.
         print("Setting text")
         textArea.text = text
         
         // Setting up the words and sentences
-        //        let words = text.components(separatedBy: " ")
         let local_words2 = text.split(separator: " ")
         n_word = local_words2.count
         var i = 0
@@ -91,9 +89,6 @@ class textEditorViewController: UIViewController {
             else {
                 print("Swipe Left")
             }
-            
-            //            let labelPosition = CGPoint(x: self.swipeLabel.frame.origin.x - 50.0, y: self.swipeLabel.frame.origin.y)
-            //            swipeLabel.frame = CGRect(x: labelPosition.x, y: labelPosition.y, width: self.swipeLabel.frame.size.width, height: self.swipeLabel.frame.size.height)
         }
         
         if (sender.direction == .right) {

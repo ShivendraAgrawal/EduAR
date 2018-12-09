@@ -23,77 +23,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         print("Pixbuff Here : ")
         print(pixbuff ?? 0)
         let ciImage = CIImage(cvPixelBuffer: pixbuff!)
-        print(ciImage)
         var image = UIImage.init(ciImage: ciImage)
-        print(image)
         
         if image.cgImage == nil {
             guard let ciImage = image.ciImage, let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent) else { return }
             
             image = UIImage(cgImage: cgImage)
         }
-        print(image)
-        
         
         let imageData = UIImageJPEGRepresentation(image, 1)
         let base64String = imageData!.base64EncodedString(options: Data.Base64EncodingOptions(rawValue: 0))
-//        let imageData:Data =  UIImagePNGRepresentation(image)!
-//        let base64String = imageData.base64EncodedString()
-//        let imageData:NSData = UIImageJPEGRepresentation(image, 0.50) //UIImagePNGRepresentation(img)
-//        let imgString = imageData.base64EncodedString(options: .init(rawValue: 0))
-//        print(base64String)
-//        let base64String = imageData.base64EncodedString(options: Data.Base64EncodingOptions(rawValue: 0))
-//        print(base64String)
-        //        let imageData = UIImagePNGRepresentation(image)
-//        let data = imageData?.base64EncodedString(options: Data.Base64EncodingOptions.lineLength64Characters)
-        
-        
-//        let todoEndpoint: String = "http://10.0.0.249:5000/classify"
-//        guard let url = URL(string: todoEndpoint) else {
-//            print("Error: cannot create URL")
-//            return
-//        }
-//        let urlRequest = URLRequest(url: url)
-//        let session = URLSession.shared
-//        let task = session.dataTask(with: urlRequest) {
-//            (data, response, error) in
-//            // check for any errors
-//            guard error == nil else {
-//                print("error calling GET on /todos/1")
-//                print(error!)
-//                return
-//            }
-//            // make sure we got data
-//            guard let responseData = data else {
-//                print("Error: did not receive data")
-//                return
-//            }
-//            // parse the result as JSON, since that's what the API provides
-//            do {
-//                guard let todo = try JSONSerialization.jsonObject(with: responseData, options: [])
-//                    as? [String: Any] else {
-//                        print("error trying to convert data to JSON")
-//                        return
-//                }
-//                print(todo)
-//                // now we have the todo
-//                // let's just print it to prove we can access it
-//                print("The todo is: " + todo.description)
-//
-//                // the todo object is a dictionary
-//                // so we just access the title using the "title" key
-//                // so check for a title and print it if we have one
-//                guard let todoTitle = todo["title"] as? String else {
-//                    print("Could not get todo title from JSON")
-//                    return
-//                }
-//                print("The title is: " + todoTitle)
-//            } catch  {
-//                print("error trying to convert data to JSON")
-//                return
-//            }
-//        }
-//        task.resume()
         
         let todosEndpoint: String = "http://10.0.0.249:5000/classify"
 //        let todosEndpoint: String = "http://10.201.21.63:5000/classify"
@@ -134,19 +73,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                                                                             print("Could not get JSON from responseData as dictionary")
                                                                             return
                 }
-                
                 let x = receivedTodo["x"] as! Float
                 let y = receivedTodo["y"] as! Float
                 let parsedText = receivedTodo["text"] as! String
-                
                 print(parsedText)
                 print(x)
                 print(y)
-                
                 self.tap_to_add_text(x: x,y: y,text: parsedText)
-                
-                
-                
             } catch  {
                 print("error parsing response from POST on /todos")
                 return
@@ -186,14 +119,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Enable Default Lighting - makes the 3D text a bit poppier.
         sceneView.autoenablesDefaultLighting = true
         
-//        //////////////////////////////////////////////////
-//        // Tap Gesture Recognizer
+        //////////////////////////////////////////////////
+        // Tap Gesture Recognizer
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
         sceneView.addGestureRecognizer(tapGesture)
         
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(_:)))
-//        tapGesture.numberOfTapsRequired = 1
-//        tapGesture.numberOfTouchesRequired = 1
         
         let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.didDoubleTapScreen))
         doubleTapRecognizer.numberOfTapsRequired = 2
@@ -208,21 +138,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        self.view.addGestureRecognizer(panGesture)
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(didPan(_:)))
         sceneView.addGestureRecognizer(panGesture)
-//
-//        //////////////////////////////////////////////////
-//
-//        // Set up Vision Model
-//        guard let selectedModel = try? VNCoreMLModel(for: Inceptionv3().model) else { // (Optional) This can be replaced with other models on https://developer.apple.com/machine-learning/
-//            fatalError("Could not load model. Ensure model has been drag and dropped (copied) to XCode Project from https://developer.apple.com/machine-learning/ . Also ensure the model is part of a target (see: https://stackoverflow.com/questions/45884085/model-is-not-part-of-any-target-add-the-model-to-a-target-to-enable-generation ")
-//        }
-//
-//        // Set up Vision-CoreML Request
-//        let classificationRequest = VNCoreMLRequest(model: selectedModel, completionHandler: classificationCompleteHandler)
-//        classificationRequest.imageCropAndScaleOption = VNImageCropAndScaleOption.centerCrop // Crop from centre of images and scale to appropriate size.
-//        visionRequests = [classificationRequest]
-//
-//        // Begin Loop to Update CoreML
-//        loopCoreMLUpdate()
+
     }
 //    private func addAirPlane(hitTestResult: ARHitTestResult) {
     private func addAirPlane(anchor : ARAnchor) {
@@ -539,153 +455,4 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override var prefersStatusBarHidden : Bool {
         return true
     }
-    
-    // MARK: - Interaction
-    
-//    @objc func handleTap(gestureRecognize: UITapGestureRecognizer) {
-//        // HIT TEST : REAL WORLD
-//        // Get Screen Centre
-//        let screenCentre : CGPoint = CGPoint(x: self.sceneView.bounds.midX, y: self.sceneView.bounds.midY)
-//
-//        let arHitTestResults : [ARHitTestResult] = sceneView.hitTest(screenCentre, types: [.featurePoint]) // Alternatively, we could use '.existingPlaneUsingExtent' for more grounded hit-test-points.
-//
-//        if let closestResult = arHitTestResults.first {
-//            // Get Coordinates of HitTest
-//            let transform : matrix_float4x4 = closestResult.worldTransform
-//            let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
-//
-//            // Create 3D Text
-//            let node : SCNNode = createNewBubbleParentNode(latestPrediction)
-//            sceneView.scene.rootNode.addChildNode(node)
-//            node.position = worldCoord
-//        }
-//    }
-    
-//    func createNewBubbleParentNode(_ text : String) -> SCNNode {
-//        // Warning: Creating 3D Text is susceptible to crashing. To reduce chances of crashing; reduce number of polygons, letters, smoothness, etc.
-//
-//        // TEXT BILLBOARD CONSTRAINT
-//        let billboardConstraint = SCNBillboardConstraint()
-//        billboardConstraint.freeAxes = SCNBillboardAxis.Y
-//
-//        // BUBBLE-TEXT
-//        let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
-//        var font = UIFont(name: "Futura", size: 0.15)
-//        font = font?.withTraits(traits: .traitBold)
-//        bubble.font = font
-//        bubble.alignmentMode = kCAAlignmentCenter
-//        bubble.firstMaterial?.diffuse.contents = UIColor.orange
-//        bubble.firstMaterial?.specular.contents = UIColor.white
-//        bubble.firstMaterial?.isDoubleSided = true
-//        // bubble.flatness // setting this too low can cause crashes.
-//        bubble.chamferRadius = CGFloat(bubbleDepth)
-//
-//        // BUBBLE NODE
-//        let (minBound, maxBound) = bubble.boundingBox
-//        let bubbleNode = SCNNode(geometry: bubble)
-//        // Centre Node - to Centre-Bottom point
-//        bubbleNode.pivot = SCNMatrix4MakeTranslation( (maxBound.x - minBound.x)/2, minBound.y, bubbleDepth/2)
-//        // Reduce default text size
-//        bubbleNode.scale = SCNVector3Make(0.2, 0.2, 0.2)
-//
-//        // CENTRE POINT NODE
-//        let sphere = SCNSphere(radius: 0.005)
-//        sphere.firstMaterial?.diffuse.contents = UIColor.cyan
-//        let sphereNode = SCNNode(geometry: sphere)
-//
-//        // BUBBLE PARENT NODE
-//        let bubbleNodeParent = SCNNode()
-//        bubbleNodeParent.addChildNode(bubbleNode)
-//        bubbleNodeParent.addChildNode(sphereNode)
-//        bubbleNodeParent.constraints = [billboardConstraint]
-//
-//        return bubbleNodeParent
-//    }
-//
-//    // MARK: - CoreML Vision Handling
-//
-//    func loopCoreMLUpdate() {
-//        // Continuously run CoreML whenever it's ready. (Preventing 'hiccups' in Frame Rate)
-//
-//        dispatchQueueML.async {
-//            // 1. Run Update.
-//            self.updateCoreML()
-//
-//            // 2. Loop this function.
-//            self.loopCoreMLUpdate()
-//        }
-//
-//    }
-//
-//    func classificationCompleteHandler(request: VNRequest, error: Error?) {
-//        // Catch Errors
-//        if error != nil {
-//            print("Error: " + (error?.localizedDescription)!)
-//            return
-//        }
-//        guard let observations = request.results else {
-//            print("No results")
-//            return
-//        }
-//
-//        // Get Classifications
-//        let classifications = observations[0...1] // top 2 results
-//            .flatMap({ $0 as? VNClassificationObservation })
-//            .map({ "\($0.identifier) \(String(format:"- %.2f", $0.confidence))" })
-//            .joined(separator: "\n")
-//
-//
-//        DispatchQueue.main.async {
-//            // Print Classifications
-//            print(classifications)
-//            print("--")
-//
-//            // Display Debug Text on screen
-//            var debugText:String = ""
-//            debugText += classifications
-//            self.debugTextView.text = debugText
-//
-//            // Store the latest prediction
-//            var objectName:String = "…"
-//            objectName = classifications.components(separatedBy: "-")[0]
-//            objectName = objectName.components(separatedBy: ",")[0]
-//            self.latestPrediction = objectName
-//
-//        }
-//    }
-//
-//    func updateCoreML() {
-//        ///////////////////////////
-//        // Get Camera Image as RGB
-//        let pixbuff : CVPixelBuffer? = (sceneView.session.currentFrame?.capturedImage)
-//        if pixbuff == nil { return }
-//        print("Pixbuff Here : ")
-//        print(pixbuff ?? 0)
-//        let ciImage = CIImage(cvPixelBuffer: pixbuff!)
-//        print(ciImage)
-//        // Note: Not entirely sure if the ciImage is being interpreted as RGB, but for now it works with the Inception model.
-//        // Note2: Also uncertain if the pixelBuffer should be rotated before handing off to Vision (VNImageRequestHandler) - regardless, for now, it still works well with the Inception model.
-//
-//        ///////////////////////////
-//        // Prepare CoreML/Vision Request
-//        let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, options: [:])
-//        // let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!, orientation: myOrientation, options: [:]) // Alternatively; we can convert the above to an RGB CGImage and use that. Also UIInterfaceOrientation can inform orientation values.
-//
-//        ///////////////////////////
-//        // Run Image Request
-//        do {
-//            try imageRequestHandler.perform(self.visionRequests)
-//        } catch {
-//            print(error)
-//        }
-//
-//    }
 }
-
-//extension UIFont {
-//    // Based on: https://stackoverflow.com/questions/4713236/how-do-i-set-bold-and-italic-on-uilabel-of-iphone-ipad
-//    func withTraits(traits:UIFontDescriptorSymbolicTraits...) -> UIFont {
-//        let descriptor = self.fontDescriptor.withSymbolicTraits(UIFontDescriptorSymbolicTraits(traits))
-//        return UIFont(descriptor: descriptor!, size: 0)
-//    }
-//}
