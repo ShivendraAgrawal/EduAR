@@ -247,23 +247,28 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     private func onTextTap(node : SCNNode) {
-//        let scnText = node.childNodes[0].geometry as? SCNText
-//                    print(scnText?.string as Any)
-//                    let text = scnText?.string as! String
-//                    self.performSegue(withIdentifier: "textEditor", sender: text)
-       
-        if !(node.childNodes.isEmpty) {
-            let scnText = node.childNodes[0].geometry as? SCNText
-            print(scnText?.string as Any)
-            let text = scnText?.string as! String
+      
+//        if !(node.childNodes.isEmpty) {
+//            let scnText = node.childNodes[0].geometry as! SCNText
+//                print(scnText.string as Any)
+//                let text = scnText.string as! String
+//                self.performSegue(withIdentifier: "textEditor", sender: text)
+//
+//
+//        }
+//        else{
+//            let scnText = node.geometry as? SCNText
+//            print(scnText?.string as Any)
+//            let text = "Touch the Text"
+//            //The line above is the hack
+//            self.performSegue(withIdentifier: "textEditor", sender: text)
+//        }
+//
+        if let scnText = node.geometry as? SCNText{
+            print(scnText.string as Any)
+            let text = scnText.string as! String
             self.performSegue(withIdentifier: "textEditor", sender: text)
-        }
-        else{
-            let scnText = node.geometry as? SCNText
-            print(scnText?.string as Any)
-            let text = "Touch the Text"
-            //The line above is the hack
-            self.performSegue(withIdentifier: "textEditor", sender: text)
+            
         }
         
     }
@@ -362,7 +367,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     
-    @objc func didTap(_ gesture :UITapGestureRecognizer) {
+    @objc func didTap(rec :UITapGestureRecognizer) {
 //        print("Tapped")
         // Get exact position where touch happened on screen of iPhone (2D coordinate)
 //        let touchPosition = recognizer.location(in: sceneView)
@@ -379,22 +384,27 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //            print(hitResult.worldTransform.columns.3)
 //            addPlane(hitTestResult: hitResult)
 //
-        if gesture.state == .ended {
-        let touchPosition = gesture.location(in: sceneView)
+        if rec.state == .ended {
+        let touchPosition = rec.location(in: sceneView)
 //        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
-        let hits = self.sceneView.hitTest(touchPosition, options: [:])
+        let hits = self.sceneView.hitTest(touchPosition, options: nil)
 //        if !tappedNode.isEmpty {
 //            let node = tappedNode[0].node
 //            print("Calling onTextTap")
 //            onTextTap(node: node)
-        if let tappednode = hits.first?.node {
-            //do something with tapped object
-            onTextTap(node: tappednode)
-        } else {
+        if !hits.isEmpty{
+            if let tappednode = hits.first?.node {
+                //do something with tapped object
+                onTextTap(node: tappednode)
+             }
+           
+        }
+        else {
             print(touchPosition)
             return
             
-        }
+            }
+      
         }
         
     }
