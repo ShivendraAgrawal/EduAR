@@ -17,24 +17,26 @@ class textEditorViewController: UIViewController {
     var text:String = ""
     var words2:[String] = []
     var sentences2:[String] = []
-    var pickerData: [String] = [String]()
+    var selected_mode:String = ""
     
     @IBOutlet weak var textArea: UITextView!
-    @IBOutlet weak var picker: UIPickerView!
+    @IBOutlet weak var paragraphButtonOutlet: UIButton!
+    @IBOutlet weak var sentenceButtonOutlet: UIButton!
+    @IBOutlet weak var wordButtonOutlet: UIButton!
+    @IBOutlet weak var instructionLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        paragraphButtonOutlet.isEnabled = false
+        self.selected_mode = "Paragraph"
+        instructionLabel.text = "Tap or long press the text for more options"
+        textArea.font = UIFont(name: (textArea.font?.fontName)!, size: 20)!
+        
         // Do any additional setup after loading the view.
         print("Setting text")
         textArea.text = text
-        // Connect data:
-        self.picker.delegate = self as? UIPickerViewDelegate
-        self.picker.dataSource = self as? UIPickerViewDataSource
-        pickerData = ["Paragraph", "Sentence", "Word"]
         
         // Setting up the words and sentences
-        
         //        let words = text.components(separatedBy: " ")
         let local_words2 = text.split(separator: " ")
         n_word = local_words2.count
@@ -57,6 +59,7 @@ class textEditorViewController: UIViewController {
         print(n_sentence)
         
         
+        
         let leftSwipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         
@@ -70,39 +73,91 @@ class textEditorViewController: UIViewController {
     @objc func handleSwipes(_ sender:UISwipeGestureRecognizer) {
         
         if (sender.direction == .left) {
-            print("Swipe Left")
+            
+            if (self.selected_mode == "Sentence"){
+                self.index_sentence = self.index_sentence + 1
+                if (self.index_sentence == self.n_sentence){
+                    self.index_sentence = self.index_sentence - 1
+                }
+                textArea.text = sentences2[self.index_sentence]
+            }
+            else if (self.selected_mode == "Word"){
+                self.index_word = self.index_word + 1
+                if (self.index_word == self.n_word){
+                    self.index_word = self.index_word - 1
+                }
+                textArea.text = words2[self.index_word]
+            }
+            else {
+                print("Swipe Left")
+            }
             
             //            let labelPosition = CGPoint(x: self.swipeLabel.frame.origin.x - 50.0, y: self.swipeLabel.frame.origin.y)
             //            swipeLabel.frame = CGRect(x: labelPosition.x, y: labelPosition.y, width: self.swipeLabel.frame.size.width, height: self.swipeLabel.frame.size.height)
         }
         
         if (sender.direction == .right) {
-            print("Swipe Right")
+            
+            if (self.selected_mode == "Sentence"){
+                self.index_sentence = self.index_sentence - 1
+                if (self.index_sentence == -1){
+                    self.index_sentence = 0
+                }
+                textArea.text = sentences2[self.index_sentence]
+            }
+            else if (self.selected_mode == "Word"){
+                self.index_word = self.index_word - 1
+                if (self.index_word == -1){
+                    self.index_word = 0
+                }
+                textArea.text = words2[self.index_word]
+            }
+            else {
+                print("Swipe Right")
+            }
+            
             //            let labelPosition = CGPoint(x: self.swipeLabel.frame.origin.x + 50.0, y: self.swipeLabel.frame.origin.y)
             //            swipeLabel.frame = CGRect(x: labelPosition.x, y: labelPosition.y, width: self.swipeLabel.frame.size.width, height: self.swipeLabel.frame.size.height)
         }
     }
     
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
-        // Column count: use one column.
-        return 1
+    @IBAction func paragraphButton(_ sender: Any) {
+        paragraphButtonOutlet.isEnabled = false
+        sentenceButtonOutlet.isEnabled = true
+        wordButtonOutlet.isEnabled = true
+        self.selected_mode = "Paragraph"
+        print(self.selected_mode)
+        self.textArea.text = self.text
+        self.instructionLabel.text = "Tap or long press the text for more options"
     }
     
-    func pickerView(pickerView: UIPickerView,
-                    numberOfRowsInComponent component: Int) -> Int {
-        
-        // Row count: rows equals array length.
-        return pickerData.count
+    @IBAction func sentenceButton(_ sender: Any) {
+        paragraphButtonOutlet.isEnabled = true
+        sentenceButtonOutlet.isEnabled = false
+        wordButtonOutlet.isEnabled = true
+        self.selected_mode = "Sentence"
+        print(self.selected_mode)
+        self.textArea.text = sentences2[self.index_sentence]
+        self.instructionLabel.text = "Swipe left or right for next sentence"
     }
     
-    func pickerView(pickerView: UIPickerView,
-                    titleForRow row: Int,
-                    forComponent component: Int) -> String? {
-        
-        // Return a string from the array for this row.
-        return pickerData[row]
+    @IBAction func wordButton(_ sender: Any) {
+        paragraphButtonOutlet.isEnabled = true
+        sentenceButtonOutlet.isEnabled = true
+        wordButtonOutlet.isEnabled = false
+        self.selected_mode = "Word"
+        print(self.selected_mode)
+        self.textArea.text = words2[self.index_word]
+        self.instructionLabel.text = "Swipe left or right for next word"
     }
     
+    @IBAction func decreaseFontSize(_ sender: Any) {
+        textArea.font = UIFont(name: (textArea.font?.fontName)!, size: (textArea.font?.pointSize)! - 1)!
+    }
+    
+    @IBAction func increaseFontSize(_ sender: Any) {
+        textArea.font = UIFont(name: (textArea.font?.fontName)!, size: (textArea.font?.pointSize)! + 1)!
+    }
     
     
     /*

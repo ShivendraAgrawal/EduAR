@@ -95,8 +95,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        }
 //        task.resume()
         
-//        let todosEndpoint: String = "http://10.0.0.249:5000/classify"
-        let todosEndpoint: String = "http://10.201.21.63:5000/classify"
+        let todosEndpoint: String = "http://10.0.0.249:5000/classify"
+//        let todosEndpoint: String = "http://10.201.21.63:5000/classify"
         guard let todosURL = URL(string: todosEndpoint) else {
             print("Error: cannot create URL")
             return
@@ -294,7 +294,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             print("Preparing Segue")
             let textEditorVC = segue.destination as! textEditorViewController
             let text = sender as! String
-            textEditorVC.text = text
+            let cleanedText = text.replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: ":", with: ".")
+            textEditorVC.text = cleanedText
         }
     }
     
