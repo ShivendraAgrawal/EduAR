@@ -453,6 +453,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     // MARK: - Status Bar: Hide
     override var prefersStatusBarHidden : Bool {
-        return true
+        return false
     }
 }
