@@ -7,17 +7,13 @@ from PIL import Image
 from flask_cors import CORS
 from flask import Flask, render_template, request, url_for, Response
 from multiprocessing.dummy import Pool as ThreadPool
-import os, json
+import os, json, re, string
 from base64 import b64decode
 
-
-PEOPLE_FOLDER = os.path.join('static', 'people_photo')
 
 app = Flask(__name__, static_url_path='')
 
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-
-
 
 
 @app.route('/classify', methods=['GET','POST'])
@@ -56,17 +52,33 @@ def show_all_markers():
 
         except:
             return Response(json.dumps({'text': "Oops. No text detected",
+                                        'object': 'none',
                                         'x': 1000,
                                         'y': h - 350 + offset
                                         }),
                             mimetype='application/json')
 
-
-        return Response(json.dumps({'text' : ocrRec(np_image),
+        text = ocrRec(np_image)
+        object = find_object(text)
+        return Response(json.dumps({'text' : text,
+                                    'object': object,
                                     'x' : (x_min + x_max)/2,
                                     'y' : h - ((y_min + y_max)/2) + offset
                                     }),
                         mimetype='application/json')
+
+def find_object(text):
+    regex = re.compile('[%s]' % re.escape(string.punctuation))
+    text = regex.sub('', text)
+    text = text.lower()
+    words = set(text.split())
+    object_set = {"airplane", "billiards", "candle", "car",
+                   "chair", "cup", "lamp", "sled", "snowman",
+                   "table", "treasure", "vase"}
+    found = words.intersection(object_set)
+    if len(found) == 0:
+        return "none"
+    return found.pop()
 
 
 def ocrRec(image):
