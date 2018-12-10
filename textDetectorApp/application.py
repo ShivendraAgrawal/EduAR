@@ -1,3 +1,8 @@
+"""
+Created on Dec 1 2018
+@author: Shivendra Agrawal
+"""
+
 import numpy as np
 from io import BytesIO
 from pprint import pprint
@@ -77,7 +82,7 @@ def find_object(text):
                    "table", "treasure", "vase"}
     found = words.intersection(object_set)
     if len(found) == 0:
-        return "none"
+        return "snowman"
     return found.pop()
 
 
