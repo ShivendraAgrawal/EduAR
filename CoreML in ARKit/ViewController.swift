@@ -6,10 +6,8 @@ import Vision
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     
-    //Store The Rotation Of The CurrentNode
     var currentAngleY: Float = 0.0
     
-    //Not Really Necessary But Can Use If You Like
     var isRotating = false
     var objectFound:String = ""
     
@@ -74,6 +72,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                                                                             print("Could not get JSON from responseData as dictionary")
                                                                             return
                 }
+                // x,y corresponds to a point within the parsed text bounding box
+                // parsedText is the text string which had been detected by our OCR algorithm
+                // objectFound is the object which is been mentioned in the text
                 let x = receivedTodo["x"] as! Float
                 let y = receivedTodo["y"] as! Float
                 let parsedText = receivedTodo["text"] as! String
@@ -110,7 +111,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        // Show statistics such as fps and timing information
+        // Show statistics
         sceneView.showsStatistics = true
         
         // Create a new scene
@@ -127,48 +128,43 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
         sceneView.addGestureRecognizer(tapGesture)
         
-        
+        // Double Tap Gesture Recognizer
         let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.didDoubleTapScreen))
         doubleTapRecognizer.numberOfTapsRequired = 2
         doubleTapRecognizer.numberOfTouchesRequired = 1
         self.view.addGestureRecognizer(doubleTapRecognizer)
         
-//        tapGesture.require(toFail: doubleTapRecognizer)
-        sceneView.showsStatistics = true
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
-//        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(moveNode))
-//        self.view.addGestureRecognizer(panGesture)
+        // Pan Gesture Recognizer (only rotating the object)
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(didPan(_:)))
         sceneView.addGestureRecognizer(panGesture)
         
+        // Pinch Gesture Recognizer
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(didPinch(_:)))
         sceneView.addGestureRecognizer(pinchGesture)
     }
-//    private func addAirPlane(hitTestResult: ARHitTestResult) {
-    private func addAirPlane(anchor : ARAnchor) {
+
+    // function to add object on double tap
+    private func addObject(anchor : ARAnchor) {
 //        let scene = SCNScene(named: "art.scnassets/traesure/treasure.scn")!
 //        objectNode = scene.rootNode.childNode(withName: "treasure", recursively: true)
-        let scene = SCNScene(named: "art.scnassets/"+self.objectFound+"/"+self.objectFound+".scn")!
-        objectNode = scene.rootNode.childNode(withName: self.objectFound, recursively: true)
+        
+        
+            let scene = SCNScene(named: "art.scnassets/"+self.objectFound+"/"+self.objectFound+".scn")!
+            objectNode = scene.rootNode.childNode(withName: self.objectFound, recursively: true)
+        
+        
        
-        // 2.
 //        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
        objectNode?.position = SCNVector3(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
        objectNode?.scale = .init(0.03, 0.03, 0.03)
         
-        // 3.
-//        let bannerNode = planeNode?.childNode(withName: "banner", recursively: true)
-//
-//        // Find banner material and update its diffuse contents:
-//        let bannerMaterial = bannerNode?.geometry?.materials.first(where: { $0.name == "logo" })
-//        bannerMaterial?.diffuse.contents = UIImage(named: "next_reality_logo")
-        
-        // 4.
         self.sceneView.scene.rootNode.addChildNode(objectNode!)
-//        moveNode(_ gesture: UIPanGestureRecognizer,currentNode:planeNode)
+
     }
     
+    // function to pass the string from the 3D node on single tap
     private func onTextTap(node : SCNNode) {
       
 //        if !(node.childNodes.isEmpty) {
@@ -182,7 +178,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        else{
 //            let scnText = node.geometry as? SCNText
 //            print(scnText?.string as Any)
-//            let text = "Touch the Text"
+//            let text = "Touch the Box"
 //            //The line above is the hack
 //            self.performSegue(withIdentifier: "textEditor", sender: text)
 //        }
@@ -196,27 +192,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
         
-//    if let scnText = node.geometry as? SCNText {
-//        print(scnText.string as Any)
-//        }
-//    else if let scnText = node.childNodes[0].geometry as? SCNText {
-//            print(scnText.string as Any)
-//        }
-//    else{
-//        print("invalid")
-//        }
-        
-        
-//        do {
-//            let scnText = try node.childNodes[0].geometry
-//            print(scnText.string as Any)
-//            }
-//        catch {
-//            let scnText = node.geometry
-//            print(scnText.string as Any)
-//        }
-    
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "textEditor" {
             print("Preparing Segue")
@@ -227,6 +203,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    // create a 3D node to display text
     func createTextNode(string: String) -> SCNNode {
         let text = SCNText(string: string, extrusionDepth: 0.1)
         text.font = UIFont.systemFont(ofSize: 1.0)
@@ -258,13 +235,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         return planeNode1
     }
     
-    
+    // create function to display 3D text once we've captured the text with the camera
     private func addtextScreen(hitTestResult: ARHitTestResult,text: String) {
         let textNode = self.createTextNode(string: text)
-//        textNode.position = SCNVector3Zero
-        
-//        self.sceneView.scene.rootNode.addChildNode(textNode)
-        // 2.
+
         textNode.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
 //        planeNode?.scale = .init(0.005, 0.005, 0.005)
         
@@ -272,14 +246,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         self.sceneView.scene.rootNode.addChildNode(textNode)
     }
     
+    // find the 3D location corresponding to the 2D x,y coordinate returned from API
     private func tap_to_add_text(x : Float,y : Float,text : String) {
         let touchPosition = CGPoint(x:CGFloat(x),y:CGFloat(y))
         
-        // 2.
-        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
         let hitTestResult = self.sceneView?.hitTest(touchPosition, types: .featurePoint)
         
-        // 3.
         if !(hitTestResult?.isEmpty)! {
             guard let hitResult = hitTestResult?.first else {
                 return
@@ -289,32 +261,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
-    
+    // function to see what does single tap on the 3D text do (it calls onTextTap)
     @objc func didTap(rec :UITapGestureRecognizer) {
-//        print("Tapped")
-        // Get exact position where touch happened on screen of iPhone (2D coordinate)
-//        let touchPosition = recognizer.location(in: sceneView)
-//
-//        // 2.
-//        // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
-//        let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
-//
-//        // 3.
-//        if !hitTestResult.isEmpty {
-//            guard let hitResult = hitTestResult.first else {
-//                return
-//            }
-//            print(hitResult.worldTransform.columns.3)
-//            addPlane(hitTestResult: hitResult)
-//
+
         if rec.state == .ended {
         let touchPosition = rec.location(in: sceneView)
 //        let tappedNode = self.sceneView.hitTest(gesture.location(in: gesture.view), options: [:])
         let hits = self.sceneView.hitTest(touchPosition, options: nil)
-//        if !tappedNode.isEmpty {
-//            let node = tappedNode[0].node
-//            print("Calling onTextTap")
-//            onTextTap(node: node)
+
         if !hits.isEmpty{
             if let tappednode = hits.first?.node {
                 //do something with tapped object
@@ -332,6 +286,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+    // pinch as an object interation to zoom in and zoom out the objects
     @objc func didPinch(_ gesture: UIPinchGestureRecognizer) {
         guard let _ = objectNode else { return }
         var originalScale = objectNode?.scale
@@ -376,12 +331,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 //    var isEditable: Bool { return false }
     
+    // function to call addObject when double tapped, it also anchors the object on a plane
     @objc func didDoubleTapScreen(_ recognizer :UIGestureRecognizer) {
                 print("Double Tapped")
                 let touchPosition = recognizer.location(in: sceneView)
 
-                // 2.
-                // Conduct a hit test based on a feature point that ARKit detected to find out what 3D point this 2D coordinate relates to
 //                let hitTestResult = sceneView.hitTest(touchPosition, types: .featurePoint)
 //
 //                // 3.
@@ -403,11 +357,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             
             //3. Add It To The Scene
             sceneView.session.add(anchor:anchor)
-            addAirPlane(anchor : anchor)
+            addObject(anchor : anchor)
         }
         
     }
     
+    // another object interaction to rotate the object
     @objc
     func didPan(_ gesture: UIPanGestureRecognizer) {
         guard let _ = objectNode else { return }
@@ -421,39 +376,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             currentAngleY = newAngleY
         }
     }
-    
-//    /// Rotates An Object On It's YAxis
-//    ///
-//    /// - Parameter gesture: UIPanGestureRecognizer
-//    @objc func moveNode(_ gesture: UIPanGestureRecognizer) {
-//
-//        if !isRotating{
-//
-//            //1. Get The Current Touch Point
-//            let currentTouchPoint = gesture.location(in: sceneView)
-//
-//            //2. Get The Next Feature Point Etc
-//            let hitTestResult = sceneView.hitTest(currentTouchPoint, types: .featurePoint)
-//            if !hitTestResult.isEmpty {
-//
-//                print("hit result")
-//
-//                guard let hitResult = hitTestResult.first else {
-//                    return
-//                }
-//
-//                let node = hitTestResult.node
-//            //3. Convert To World Coordinates
-//            let worldTransform = hitResult.worldTransform
-//
-//            //4. Set The New Position
-//            let newPosition = SCNVector3(worldTransform.columns.3.x, worldTransform.columns.3.y, worldTransform.columns.3.z)
-////
-//            //5. Apply To The Node
-//            node!.simdPosition = float3(newPosition.x, newPosition.y, newPosition.z)
-//            }
-//        }
-//    }
+
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
