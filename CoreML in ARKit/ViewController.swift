@@ -12,7 +12,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     //Not Really Necessary But Can Use If You Like
     var isRotating = false
     
-    var planeNode: SCNNode!
+    var objectNode: SCNNode!
     
     @IBAction func captureFrame(_ sender: Any) {
         print("Frame captured")
@@ -138,17 +138,19 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        self.view.addGestureRecognizer(panGesture)
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(didPan(_:)))
         sceneView.addGestureRecognizer(panGesture)
-
+        
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(didPinch(_:)))
+        sceneView.addGestureRecognizer(pinchGesture)
     }
 //    private func addAirPlane(hitTestResult: ARHitTestResult) {
     private func addAirPlane(anchor : ARAnchor) {
-        let scene = SCNScene(named: "art.scnassets/snowman.scn")!
-        planeNode = scene.rootNode.childNode(withName: "snowBanner", recursively: true)
+        let scene = SCNScene(named: "art.scnassets/traesure/treasure.scn")!
+        objectNode = scene.rootNode.childNode(withName: "treasure", recursively: true)
        
         // 2.
 //        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
-       planeNode?.position = SCNVector3(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
-       planeNode?.scale = .init(1, 1, 1)
+       objectNode?.position = SCNVector3(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
+       objectNode?.scale = .init(0.03, 0.03, 0.03)
         
         // 3.
 //        let bannerNode = planeNode?.childNode(withName: "banner", recursively: true)
@@ -158,7 +160,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        bannerMaterial?.diffuse.contents = UIImage(named: "next_reality_logo")
         
         // 4.
-        self.sceneView.scene.rootNode.addChildNode(planeNode!)
+        self.sceneView.scene.rootNode.addChildNode(objectNode!)
 //        moveNode(_ gesture: UIPanGestureRecognizer,currentNode:planeNode)
     }
     
@@ -325,7 +327,36 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
-    
+    @objc func didPinch(_ gesture: UIPinchGestureRecognizer) {
+        guard let _ = objectNode else { return }
+        var originalScale = objectNode?.scale
+        
+        switch gesture.state {
+        case .began:
+            originalScale = objectNode?.scale
+            gesture.scale = CGFloat((objectNode?.scale.x)!)
+        case .changed:
+            guard var newScale = originalScale else { return }
+            if gesture.scale < 0.01{ newScale = SCNVector3(x: 0.01, y: 0.01, z: 0.01) }else if gesture.scale > 2{
+                newScale = SCNVector3(2, 2, 2)
+            }else{
+                newScale = SCNVector3(gesture.scale, gesture.scale, gesture.scale)
+            }
+            objectNode?.scale = newScale
+        case .ended:
+            guard var newScale = originalScale else { return }
+            if gesture.scale < 0.01{ newScale = SCNVector3(x: 0.01, y: 0.01, z: 0.01) }else if gesture.scale > 2{
+                newScale = SCNVector3(2, 2, 2)
+            }else{
+                newScale = SCNVector3(gesture.scale, gesture.scale, gesture.scale)
+            }
+            objectNode?.scale = newScale
+            gesture.scale = CGFloat((objectNode?.scale.x)!)
+        default:
+            gesture.scale = 1.0
+            originalScale = nil
+        }
+    }
     
     func adjustUITextViewHeight(arg : UITextView)
     {
@@ -374,12 +405,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     @objc
     func didPan(_ gesture: UIPanGestureRecognizer) {
-        guard let _ = planeNode else { return }
+        guard let _ = objectNode else { return }
         let translation = gesture.translation(in: gesture.view)
         var newAngleY = (Float)(translation.x)*(Float)(Double.pi)/180.0
         
         newAngleY += currentAngleY
-        planeNode?.eulerAngles.y = newAngleY
+        objectNode?.eulerAngles.y = newAngleY
         
         if gesture.state == .ended{
             currentAngleY = newAngleY
