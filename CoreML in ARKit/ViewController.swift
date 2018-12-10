@@ -11,6 +11,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     //Not Really Necessary But Can Use If You Like
     var isRotating = false
+    var objectFound:String = ""
     
     var objectNode: SCNNode!
     
@@ -76,9 +77,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 let x = receivedTodo["x"] as! Float
                 let y = receivedTodo["y"] as! Float
                 let parsedText = receivedTodo["text"] as! String
+                self.objectFound = receivedTodo["object"] as! String
                 print(parsedText)
                 print(x)
                 print(y)
+                print(self.objectFound)
                 self.tap_to_add_text(x: x,y: y,text: parsedText)
             } catch  {
                 print("error parsing response from POST on /todos")
@@ -144,8 +147,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 //    private func addAirPlane(hitTestResult: ARHitTestResult) {
     private func addAirPlane(anchor : ARAnchor) {
-        let scene = SCNScene(named: "art.scnassets/traesure/treasure.scn")!
-        objectNode = scene.rootNode.childNode(withName: "treasure", recursively: true)
+//        let scene = SCNScene(named: "art.scnassets/traesure/treasure.scn")!
+//        objectNode = scene.rootNode.childNode(withName: "treasure", recursively: true)
+        let scene = SCNScene(named: "art.scnassets/"+self.objectFound+"/"+self.objectFound+".scn")!
+        objectNode = scene.rootNode.childNode(withName: self.objectFound, recursively: true)
        
         // 2.
 //        planeNode?.position = SCNVector3(hitTestResult.worldTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
