@@ -5,7 +5,7 @@
 ### Hardware Requirement
 1) A Macbook
 2) Xcode installed
-3) An IOS device beyond iphone 6
+3) An iOS device beyond iphone 6
 
 ### Installing the app
 1) Install python 3.6
@@ -28,13 +28,20 @@
 
 ### The main focus of this project is to aid individuals with learning disabilities.
 
-#### Image Place Holder
+First you have to map the surrounding, the yellow dots are feature points which show that the environment is being perceived.
 
-The Application reads from the paper with the LSTM mode of the Tesseract OCR. We visalise this on a 3D plane in our augmented reality plane.
-<br>
-This will help learners augment their text with visally anchored 3D text.
-#### Image Place Holder
+![img1](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF1.gif?raw=true)
 
-When we tap on the text that appears on the plane it spawns a 3D object. This should aid visual learners grasp the concepts better.
+Then, EduAR reads from the paper with the LSTM mode of the Tesseract OCR. We visalise this on a 3D plane in AR.
 
-#### Image Place Holder
+![img2](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF2.gif?raw=true)
+
+This will help learners augment their text with visually anchored 3D text. Then they can tap the text and enter the visual aide of EduAR. They can view words, sentences or paragraphs as per their convinience.
+
+![img3](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF3.gif?raw=true)
+
+To encourage visual learning we have enabled a tap to visualize feature. When the user taps on the text it spawns a 3D object. This should aid visual learners grasp the concepts better.
+
+![img4](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF4.gif?raw=true)
+
+### Now download the code and have fun!
