@@ -28,19 +28,19 @@
 
 ### The main focus of this project is to aid individuals with learning disabilities.
 
-First you have to map the surrounding, the yellow dots are feature points which show that the environment is being perceived.
+First you have to spatially map the surrounding, the yellow dots are feature points which show that the environment is being perceived.
 
 ![img1](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF1.gif?raw=true)
 
-Then, EduAR reads from the paper with the LSTM mode of the Tesseract OCR. We visalise this on a 3D plane in AR.
+Then, EduAR reads from the paper with the LSTM mode of the Tesseract OCR. We visalise this on a 3D plane in AR anchored on the real text.
 
 ![img2](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF2.gif?raw=true)
 
-This will help learners augment their text with visually anchored 3D text. Then they can tap the text and enter the visual aide of EduAR. They can view words, sentences or paragraphs as per their convinience.
+This will help learners to generate visually anchored 3D text for all the texts in a scene. Then they can tap the desired text and enter the visual aide of EduAR. They can view words, sentences or paragraphs as per their convinience.
 
 ![img3](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF3.gif?raw=true)
 
-To encourage visual learning we have enabled a tap to visualize feature. When the user taps on the text it spawns a 3D object. This should aid visual learners grasp the concepts better.
+To encourage visual learning we have enabled a tap to visualize feature. When the user double taps anywhere on the screen it spawns a 3D object on the plane with hit test. This should aid visual learners grasp the concepts better.
 
 ![img4](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF4.gif?raw=true)
 
