@@ -10,12 +10,13 @@
 ### Installing the app
 1) Install python 3.6
 2) Install the required libraries - 
-    Flask==0.12.2
-    Flask-Cors==3.0.3
-    numpy==1.14.2
-    opencv-python==3.4.1.15
-    Pillow==5.1.0
-    pytesseract==0.2.5
+
+    `Flask==0.12.2`
+    `Flask-Cors==3.0.3`
+    `numpy==1.14.2`
+    `opencv-python==3.4.1.15`
+    `Pillow==5.1.0`
+    `pytesseract==0.2.5`
 3) Start the Python server by running the app
 4) Find you public IP address by using `ifconfig` (on Unix based systems)
 5) Change the IP address on Line 36 of ViewController.swift
