@@ -12,11 +12,17 @@
 2) Install the required libraries - 
 
     `Flask==0.12.2`
+    
     `Flask-Cors==3.0.3`
+    
     `numpy==1.14.2`
+    
     `opencv-python==3.4.1.15`
+    
     `Pillow==5.1.0`
+    
     `pytesseract==0.2.5`
+    
 3) Start the Python server by running the app
 4) Find you public IP address by using `ifconfig` (on Unix based systems)
 5) Change the IP address on Line 36 of ViewController.swift
@@ -36,7 +42,9 @@ Then, EduAR reads from the paper with the LSTM mode of the Tesseract OCR. We vis
 
 ![img2](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF2.gif?raw=true)
 
-This will help learners to generate visually anchored 3D text for all the texts in a scene. Then they can tap the desired text and enter the visual aide of EduAR. They can view words, sentences or paragraphs as per their convinience.
+This will help learners to generate visually anchored 3D text for all the texts in a scene. Then they can tap the desired text and enter the visual aide of EduAR. 
+*Text Editor Features*
+The text editor has all the standard copy, share, define options as well as a unique read mode. This allows the users to just focus on one paragraph, sentence or word at a time and swipe to the next segment. The font size option is also provided to change the font size as per convinience. 
 
 ![img3](https://github.com/ShivendraAgrawal/EduAR/blob/master/EduAR%20gifs/GIF3.gif?raw=true)
 
