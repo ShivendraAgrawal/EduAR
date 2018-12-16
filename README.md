@@ -1,4 +1,5 @@
-# EDU-AR
+# EduAR
+### The main focus of this project is to aid individuals with learning disabilities.
 
 ### CSCI-5413 VR Project
 
@@ -31,8 +32,6 @@
 7) Set the team ID as `shivendra.agrawal@gmail.com` or create a new one.
 8) Provide a unique budle identifier.
 9) Connect your ipad or iphone and build the project
-
-### The main focus of this project is to aid individuals with learning disabilities.
 
 ### Preparing ARKit
 * First you have to spatially map the surrounding, the yellow dots are feature points which show that the environment is being perceived and mapped.
